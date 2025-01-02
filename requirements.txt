@@ -1,0 +1,11 @@
+python-dotenv
+langgraph
+langchain-google-genai
+langchain-groq
+langchain_openai
+langchain-core
+pydantic
+streamlit
+typing
+python-dotenv
+langsmith
