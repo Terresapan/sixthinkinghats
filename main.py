@@ -35,7 +35,7 @@ llm_groq = ChatGroq(
 )
 
 llm_genai = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
+    model="gemini-2.0-flash-exp",
     api_key=os.environ["GEMINI_API_KEY"],
     temperature=0,
     max_tokens=2000,
@@ -45,6 +45,7 @@ llm_genai = ChatGoogleGenerativeAI(
 
 llm_openai = ChatOpenAI(
     model="gpt-4o-mini",
+    api_key=os.environ["OPENAI_API_KEY"],
     temperature=0,
     max_tokens=2000,
     timeout=None,
