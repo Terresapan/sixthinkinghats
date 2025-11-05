@@ -9,3 +9,4 @@ streamlit
 typing
 python-dotenv
 langsmith
+tavily-python
