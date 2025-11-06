@@ -151,6 +151,12 @@ class PhasedWorkflowGraph:
         workflow.add_edge("green_hat", "blue_hat")
         workflow.add_edge("blue_hat", END)
 
+        # Draw the graph
+        try:
+            workflow.compile().get_graph(xray=True).draw_mermaid_png(output_file_path="graph.png")
+        except Exception:
+            pass
+
         return workflow.compile()
 
     def _query_analyzer_node(self, state: WorkflowState) -> WorkflowState:
