@@ -133,7 +133,7 @@ class SearchExecutionResult:
 class SearchOrchestrator:
     """Main orchestrator for managing search operations across thinking hats."""
     
-    def __init__(self, search_api: SearchAPI, max_searches: int = 4):
+    def __init__(self, search_api: SearchAPI, max_searches: int = 6):
         self.search_api = search_api
         self.max_searches = max_searches
         self.query_analyzer = QueryAnalyzer()

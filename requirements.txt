@@ -7,6 +7,6 @@ langchain-core
 pydantic
 streamlit
 typing
-python-dotenv
 langsmith
 tavily-python
+toml

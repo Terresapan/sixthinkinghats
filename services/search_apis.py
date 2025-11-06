@@ -28,22 +28,22 @@ class SearchResult:
 
 class SearchAPI:
     """Abstract base class for search API providers."""
-    
-    async def search(self, query: str, max_results: int = 5) -> List[SearchResult]:
+
+    def search(self, query: str, max_results: int = 5) -> List[SearchResult]:
         """Perform a web search and return results."""
         raise NotImplementedError
 
 
 class TavilySearchAPI(SearchAPI):
     """Tavily search API implementation."""
-    
+
     def __init__(self):
         api_key = os.getenv("TAVILY_API_KEY")
         if not api_key:
             raise ValueError("TAVILY_API_KEY environment variable is required")
         self.client = TavilyClient(api_key=api_key)
-    
-    async def search(self, query: str, max_results: int = 5) -> List[SearchResult]:
+
+    def search(self, query: str, max_results: int = 5) -> List[SearchResult]:
         """Perform a search using Tavily API."""
         try:
             response = self.client.search(
