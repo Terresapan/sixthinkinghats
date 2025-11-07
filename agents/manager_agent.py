@@ -197,7 +197,7 @@ class ManagerAgent:
 
         # Return topic with highest score
         if topic_scores:
-            return max(topic_scores, key=topic_scores.get)
+            return max(topic_scores, key=topic_scores.get) # type: ignore
         else:
             return Topic.GENERAL
 

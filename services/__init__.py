@@ -1,11 +1,9 @@
 """Services module for search orchestration and query analysis."""
 
 from .search_apis import SearchAPI, SearchResult, TavilySearchAPI, SearchAPIFactory
-from .query_analyzer import QueryAnalyzer, HatSearchDecision, QueryComplexity, SearchPriority
-from .search_orchestrator import SearchOrchestrator, SearchCache, DuplicateDetector, SearchExecutionResult
+from .phased_search_orchestrator import PhasedSearchOrchestrator, HatSearchContext, SearchCache, DuplicateDetector
 
 __all__ = [
     'SearchAPI', 'SearchResult', 'TavilySearchAPI', 'SearchAPIFactory',
-    'QueryAnalyzer', 'HatSearchDecision', 'QueryComplexity', 'SearchPriority',
-    'SearchOrchestrator', 'SearchCache', 'DuplicateDetector', 'SearchExecutionResult'
+    'PhasedSearchOrchestrator', 'HatSearchContext', 'SearchCache', 'DuplicateDetector'
 ]

@@ -44,14 +44,14 @@ Response guidelines:
 
         # Build message with search context
         messages = [self.create_system_message()]
-        messages.append(HumanMessage(content=query))
+        messages.append(HumanMessage(content=query)) # type: ignore
 
         try:
             response = self.llm.invoke(messages)
             execution_time = time.time() - start_time
             return AgentProcessingResult(
                 agent_name="white_hat",
-                response=response.content,
+                response=response.content, # type: ignore
                 processing_time=execution_time,
                 search_used=search_context is not None
             )
@@ -103,14 +103,14 @@ Response guidelines:
 
         # Build message with search context
         messages = [self.create_system_message()]
-        messages.append(HumanMessage(content=query))
+        messages.append(HumanMessage(content=query)) # type: ignore
 
         try:
             response = self.llm.invoke(messages)
             execution_time = time.time() - start_time
             return AgentProcessingResult(
                 agent_name="red_hat",
-                response=response.content,
+                response=response.content, # type: ignore
                 processing_time=execution_time,
                 search_used=search_context is not None
             )
@@ -161,14 +161,14 @@ Response guidelines:
             self.set_search_results(search_context, {})
 
         messages = [self.create_system_message()]
-        messages.append(HumanMessage(content=query))
+        messages.append(HumanMessage(content=query)) # type: ignore
 
         try:
             response = self.llm.invoke(messages)
             execution_time = time.time() - start_time
             return AgentProcessingResult(
                 agent_name="yellow_hat",
-                response=response.content,
+                response=response.content, # type: ignore
                 processing_time=execution_time,
                 search_used=search_context is not None
             )
@@ -219,14 +219,14 @@ Response guidelines:
             self.set_search_results(search_context, {})
 
         messages = [self.create_system_message()]
-        messages.append(HumanMessage(content=query))
+        messages.append(HumanMessage(content=query)) # type: ignore
 
         try:
             response = self.llm.invoke(messages)
             execution_time = time.time() - start_time
             return AgentProcessingResult(
                 agent_name="black_hat",
-                response=response.content,
+                response=response.content, # type: ignore
                 processing_time=execution_time,
                 search_used=search_context is not None
             )
@@ -305,14 +305,14 @@ Response guidelines:
 
         # Create messages
         messages = [SystemMessage(content=enhanced_context)]
-        messages.append(HumanMessage(content=query))
+        messages.append(HumanMessage(content=query)) # type: ignore
 
         try:
             response = self.llm.invoke(messages)
             execution_time = time.time() - start_time
             return AgentProcessingResult(
                 agent_name="green_hat",
-                response=response.content,
+                response=response.content, # type: ignore
                 processing_time=execution_time,
                 search_used=search_context is not None
             )
@@ -392,14 +392,14 @@ Response guidelines:
 
         # Create messages
         messages = [SystemMessage(content=enhanced_context)]
-        messages.append(HumanMessage(content=query))
+        messages.append(HumanMessage(content=query)) # type: ignore
 
         try:
             response = self.llm.invoke(messages)
             execution_time = time.time() - start_time
             return AgentProcessingResult(
                 agent_name="blue_hat",
-                response=response.content,
+                response=response.content, # type: ignore
                 processing_time=execution_time,
                 search_used=False  # Blue Hat doesn't use search directly in this architecture
             )

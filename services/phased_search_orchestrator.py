@@ -15,11 +15,106 @@ Key features:
 """
 
 import time
+import hashlib
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, TypedDict, Any
+from typing import Dict, List, Optional, TypedDict, Any, Tuple
 from dataclasses import dataclass, field
-from services.search_apis import TavilySearchAPI, SearchResult
-from services.search_orchestrator import SearchCache, DuplicateDetector
+from services.search_apis import TavilySearchAPI
+
+
+class SearchCache:
+    """Cache for storing search results to prevent duplicate queries."""
+
+    def __init__(self, ttl_seconds: int = 3600):  # 1 hour default TTL
+        self.cache = {}
+        self.ttl_seconds = ttl_seconds
+
+    def _generate_cache_key(self, query: str, hat_name: str) -> str:
+        """Generate a cache key for a query and hat combination."""
+        combined = f"{hat_name}:{query.lower().strip()}"
+        return hashlib.md5(combined.encode()).hexdigest()
+
+    def get(self, query: str, hat_name: str) -> Optional[List[Dict[str, Any]]]:
+        """Get cached results if available and not expired."""
+        cache_key = self._generate_cache_key(query, hat_name)
+
+        if cache_key in self.cache:
+            result_data, timestamp = self.cache[cache_key]
+            if datetime.now() - timestamp < timedelta(seconds=self.ttl_seconds):
+                return result_data
+            else:
+                # Remove expired entry
+                del self.cache[cache_key]
+
+        return None
+
+    def set(self, query: str, hat_name: str, results: List[Dict[str, Any]]):
+        """Cache search results."""
+        cache_key = self._generate_cache_key(query, hat_name)
+        self.cache[cache_key] = (results, datetime.now())
+
+    def clear(self):
+        """Clear all cached results."""
+        self.cache.clear()
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Get cache statistics."""
+        total_entries = len(self.cache)
+        valid_entries = 0
+
+        now = datetime.now()
+        for result_data, timestamp in self.cache.values():
+            if now - timestamp < timedelta(seconds=self.ttl_seconds):
+                valid_entries += 1
+
+        return {
+            "total_entries": total_entries,
+            "valid_entries": valid_entries,
+            "expired_entries": total_entries - valid_entries,
+            "hit_potential": valid_entries / max(total_entries, 1)
+        }
+
+
+class DuplicateDetector:
+    """Detects and prevents duplicate search queries."""
+
+    def __init__(self, similarity_threshold: float = 0.8):
+        self.similarity_threshold = similarity_threshold
+        self.query_registry = []
+
+    def is_duplicate(self, new_query: str, existing_queries: List[Tuple[str, str]]) -> Tuple[bool, Optional[str]]:
+        """
+        Check if a new query is similar to existing queries.
+        Returns (is_duplicate, matched_query)
+        """
+        new_words = set(new_query.lower().split())
+
+        for existing_query, hat_name in existing_queries:
+            existing_words = set(existing_query.lower().split())
+
+            # Calculate Jaccard similarity
+            intersection = len(new_words & existing_words)
+            union = len(new_words | existing_words)
+
+            if union > 0:
+                similarity = intersection / union
+                if similarity >= self.similarity_threshold:
+                    return True, existing_query
+
+        return False, None
+
+    def add_query(self, query: str, hat_name: str):
+        """Add a query to the registry."""
+        self.query_registry.append((query, hat_name))
+
+    def get_registered_queries(self) -> List[Tuple[str, str]]:
+        """Get all registered queries."""
+        return self.query_registry.copy()
+
+    def clear_registry(self):
+        """Clear the query registry."""
+        self.query_registry.clear()
 
 
 class SearchPhase(Enum):
@@ -34,7 +129,7 @@ class HatSearchContext:
     """Context for a specific hat's search"""
     hat_type: str
     search_query: str
-    search_results: List[SearchResult]
+    search_results: List[Dict[str, Any]]
     cache_hit: bool = False
     execution_time: float = 0.0
     metadata: Dict = field(default_factory=dict)
@@ -145,15 +240,18 @@ class PhasedSearchOrchestrator:
 
             execution_time = time.time() - start_time
 
+            # Use cached results if available, otherwise use new results
+            final_results = search_results_dicts if not cache_hit else (cached_results or [])
+
             results[hat_type] = HatSearchContext(
                 hat_type=hat_type,
                 search_query=search_query,
-                search_results=search_results_dicts if not cache_hit else cached_results,
+                search_results=final_results,
                 cache_hit=cache_hit,
                 execution_time=execution_time,
                 metadata={
                     'query_length': len(search_query),
-                    'result_count': len(search_results_dicts) if not cache_hit else len(cached_results)
+                    'result_count': len(final_results)
                 }
             )
 
@@ -223,15 +321,18 @@ class PhasedSearchOrchestrator:
         # Update statistics
         self.search_stats['total_searches'] += 1
 
+        # Use cached results if available, otherwise use new results
+        final_results = search_results_dicts if not cache_hit else (cached_results or [])
+
         return HatSearchContext(
             hat_type=hat_type,
             search_query=search_query,
-            search_results=search_results_dicts if not cache_hit else cached_results,
+            search_results=final_results,
             cache_hit=cache_hit,
             execution_time=execution_time,
             metadata={
                 'query_length': len(search_query),
-                'result_count': len(search_results_dicts) if not cache_hit else len(cached_results),
+                'result_count': len(final_results),
                 'phase': 'sequential'
             }
         )
@@ -240,7 +341,7 @@ class PhasedSearchOrchestrator:
         self,
         hat_responses: Dict[str, str],
         search_contexts: Dict[str, HatSearchContext]
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Aggregate contexts from parallel hats for Green Hat processing.
 
@@ -286,7 +387,7 @@ class PhasedSearchOrchestrator:
         black_response: str,
         green_response: str,
         search_contexts: Dict[str, HatSearchContext]
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Build comprehensive context for Blue Hat synthesis.
 

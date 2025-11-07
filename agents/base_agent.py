@@ -87,17 +87,17 @@ class BaseThinkingHatAgent(ABC):
         if conversation_history:
             for msg in conversation_history:
                 if isinstance(msg, HumanMessage):
-                    messages.append(msg)
+                    messages.append(msg) # type: ignore
                 elif isinstance(msg, AIMessage):
-                    messages.append(msg)
+                    messages.append(msg) # type: ignore
         
         # Add current user query
-        messages.append(HumanMessage(content=user_query))
+        messages.append(HumanMessage(content=user_query)) # type: ignore
         
         try:
             # Get response from LLM
             response = self.llm.invoke(messages)
-            return response.content
+            return response.content # type: ignore
         except Exception as e:
             return f"I apologize, but I encountered an error while processing your query: {str(e)}"
     
